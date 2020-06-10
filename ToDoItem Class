@@ -1,0 +1,63 @@
+package hw3;
+
+import java.io.*;
+import java.util.*;
+import java.lang.*;
+
+public class ToDoItem implements Serializable{
+    private String category;
+    private String toDoTitle;
+    private String longDescription;
+    private int idNumber;
+    private static int nextID = 0;
+    
+    
+    public ToDoItem(String category, String toDoTitle)
+    {
+        this.category = category;
+        this.toDoTitle = toDoTitle;
+        
+//        if(this.idNumber > nextID)
+//            nextID = ++this.idNumber;
+
+    /*
+        probably dont need to have this since it is
+        not in his UML but may be good to have anyway.
+    */
+    }
+    
+    public String getToDoTitle()
+    {
+        return this.toDoTitle;
+    }
+    
+    
+    public String getCategory()
+    {
+        return this.category;
+    }
+    
+    public void setCategory(String category)
+    {
+        this.category = category;
+    }
+    
+    public String getLongDescription()
+    {
+        return this.longDescription;
+    }
+    
+    public void setLongDiscription(String longDescription)
+    {
+        this.longDescription = longDescription;
+    }
+    
+    
+    public String toString()
+    {
+        String output = "";
+        output += this.category + " " + this.toDoTitle;
+        
+        return output;
+    }
+}

@@ -1,0 +1,194 @@
+package cis484_hw3_todofx;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.text.*;
+import javafx.stage.Stage;
+
+
+public class MainJavaFX_ToDoFX extends Application {
+    
+    Stage mainWindow;
+    Scene mainScene;
+
+    //public static ArrayList<Category> categoryArray = new ArrayList<>();
+    //public static ArrayList<ToDoItem> toDoArray = new ArrayList<>();
+    
+    @Override
+    public void start(Stage primaryStage) {
+        
+        mainWindow = primaryStage;
+        //public static ObservableList olCategories = FXCollections.observableArrayList(categoryArray);
+        //public static ObservableList olToDoItems = FXCollections.observableArrayList(toDoArray);
+        
+
+        MenuBar menuBar = new MenuBar();
+        Menu menu = new Menu("Categories");
+        MenuItem menuItem = new MenuItem("Edit Categories");
+        
+        menuBar.getMenus().addAll(menu);
+        menu.getItems().addAll(menuItem);
+        
+        
+        //Left pane of main screen
+        VBox vbox1 = new VBox();
+        vbox1.setPrefSize(250, 800);
+        vbox1.setPadding(new Insets(0, 10, 10, 10));
+        vbox1.setSpacing(5);
+        
+        Label lblNew = new Label("New To-Do Item Title:");
+        lblNew.setPadding(new Insets(10, 0, 0, 0));
+        TextArea txtNew = new TextArea();
+        txtNew.setPrefSize(325, 60);
+        Label lblCategory = new Label("Category:");
+        lblCategory.setPadding(new Insets(10, 0, 0, 0));
+        ComboBox cmboCategories = new ComboBox();
+        cmboCategories.setPadding(new Insets(5, 0, 0, 0));
+        Button btnAdd = new Button("Add New Item ->");
+        btnAdd.setPadding(new Insets(5, 5, 5, 5));
+        Button btnDelete = new Button("Delete Selected Item ->");
+        btnDelete.setPadding(new Insets(5, 5, 5, 5));
+        
+        vbox1.getChildren().addAll(lblNew, txtNew, lblCategory,cmboCategories, btnAdd, btnDelete);
+        
+        
+        //Right pane of main screen
+        HBox hbox = new HBox();
+        hbox.setPrefSize(325, 100);
+        hbox.setSpacing(5);
+        
+        Button btnRaise = new Button("Raise");
+        btnRaise.setPadding(new Insets(5, 5, 5, 5));
+        Button btnLower = new Button("Lower");
+        btnLower.setPadding(new Insets(5, 5, 5, 5));
+        Button btnDetails = new Button("View Item Detail");
+        btnDetails.setPadding(new Insets(5, 5, 5, 5));
+        
+        hbox.getChildren().addAll(btnRaise, btnLower, btnDetails);
+        
+        VBox vbox2 = new VBox();
+        vbox2.setPrefSize(325, 800); //formatting
+        vbox2.setPadding(new Insets(10, 10, 10, 10));
+        vbox2.setSpacing(5);
+        
+        TextArea txtToDo = new TextArea();
+        txtToDo.setPrefColumnCount(2);
+        txtToDo.setPrefRowCount(15);
+        txtToDo.setPrefSize(325, 500);
+        
+        vbox2.getChildren().addAll(txtToDo, hbox);
+        
+
+        //Holds left and right panes on main screen
+        BorderPane border = new BorderPane();
+        border.setPrefSize(600, 800);
+        border.setMinHeight(800);
+        border.setTop(menuBar); 
+        border.setLeft(vbox1);
+        border.setRight(vbox2);
+        
+        
+        //Button controls
+        menuItem.setOnAction(e -> {
+            showEditCategoriesScreen();
+        });
+        
+        btnDetails.setOnAction(e -> {
+            showEditToDoScreen();
+        });
+        
+
+        mainScene = new Scene(border, 600, 800);
+        primaryStage.setTitle("ToDo.FX");
+        primaryStage.setScene(mainScene);
+        primaryStage.show();
+        
+    }
+
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+    
+    public void showEditCategoriesScreen(){
+        
+        Stage stage = new Stage();
+        
+        HBox hbox = new HBox();
+        hbox.setPrefSize(300, 50);
+        hbox.setSpacing(0);
+        
+        Button btnAdd = new Button("Add:");
+        Button btnDelete = new Button("Delete Selected");
+        
+        hbox.getChildren().addAll(btnAdd, btnDelete);
+        
+        VBox vbox = new VBox();
+        vbox.setPrefSize(300, 400); 
+        vbox.setPadding(new Insets(10, 10, 10, 10));
+        vbox.setSpacing(0);
+        
+        TextArea txtList = new TextArea();
+        TextField txtNew = new TextField();
+        
+        vbox.getChildren().addAll(txtList, txtNew, hbox);
+        
+        BorderPane border = new BorderPane();
+        border.setPrefSize(300, 400);
+        border.setMinHeight(400);
+        border.setCenter(vbox);
+        
+        Scene scene = new Scene(border, 300, 400);
+        stage.setScene(scene);
+        stage.setTitle("Edit Categories");
+        stage.show();
+        
+    }
+    
+    public void showEditToDoScreen(){
+        Stage stage = new Stage();
+        
+        Button btnSave = new Button("Save Changes ->");
+        
+        TextField txtCategory = new TextField();
+        TextField txtItem = new TextField();
+        TextArea txtNotes = new TextArea();
+        txtNotes.setPrefSize(500, 380);
+                
+        VBox vbox1 = new VBox();
+        vbox1.setSpacing(0);
+        vbox1.getChildren().addAll(txtCategory, txtItem);
+        
+        HBox hbox = new HBox();
+        hbox.setPrefSize(500, 100);
+        hbox.setPadding(new Insets(0, 0, 10, 0));
+        hbox.setSpacing(0);
+        hbox.getChildren().addAll(vbox1, btnSave);
+        
+        VBox vbox2 = new VBox();
+        vbox2.setPadding(new Insets(10, 10, 10, 10));
+        vbox2.setSpacing(0);
+        vbox2.getChildren().addAll(hbox, txtNotes);
+        
+        
+        Scene scene = new Scene(vbox2, 500, 300);
+        stage.setScene(scene);
+        stage.setTitle("Edit To-Do Item");
+        stage.show();
+    }
+    
+}

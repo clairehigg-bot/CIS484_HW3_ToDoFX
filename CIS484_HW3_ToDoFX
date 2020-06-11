@@ -24,25 +24,29 @@ public class MainJavaFX_ToDoFX extends Application {
     
     Stage mainWindow;
     Scene mainScene;
-
-    //public static ArrayList<Category> categoryArray = new ArrayList<>();
-    //public static ArrayList<ToDoItem> toDoArray = new ArrayList<>();
+    
+    public static String toDoTitle;
+    public static String category;
+    
+    public static final ObservableList<ToDoItem> olToDoItems = FXCollections.observableArrayList(new ToDoItem(toDoTitle, category));
+    public static final ObservableList<String> olCategories = FXCollections.observableArrayList();
+    
+    public static ListView<ToDoItem> toDoListView = new ListView<ToDoItem>();
+    public static ListView<String> categoriesListView = new ListView<String>();
     
     @Override
     public void start(Stage primaryStage) {
         
         mainWindow = primaryStage;
-        //public static ObservableList olCategories = FXCollections.observableArrayList(categoryArray);
-        //public static ObservableList olToDoItems = FXCollections.observableArrayList(toDoArray);
         
-
+        
+        
         MenuBar menuBar = new MenuBar();
         Menu menu = new Menu("Categories");
         MenuItem menuItem = new MenuItem("Edit Categories");
         
         menuBar.getMenus().addAll(menu);
         menu.getItems().addAll(menuItem);
-        
         
         //Left pane of main screen
         VBox vbox1 = new VBox();
@@ -57,14 +61,18 @@ public class MainJavaFX_ToDoFX extends Application {
         Label lblCategory = new Label("Category:");
         lblCategory.setPadding(new Insets(10, 0, 0, 0));
         ComboBox cmboCategories = new ComboBox();
+        cmboCategories.setItems(olCategories);
         cmboCategories.setPadding(new Insets(5, 0, 0, 0));
+        cmboCategories.setPromptText("Choose a Category");
         Button btnAdd = new Button("Add New Item ->");
         btnAdd.setPadding(new Insets(5, 5, 5, 5));
         Button btnDelete = new Button("Delete Selected Item ->");
         btnDelete.setPadding(new Insets(5, 5, 5, 5));
         
-        vbox1.getChildren().addAll(lblNew, txtNew, lblCategory,cmboCategories, btnAdd, btnDelete);
         
+       
+        
+        vbox1.getChildren().addAll(lblNew, txtNew, lblCategory,cmboCategories, btnAdd, btnDelete);
         
         //Right pane of main screen
         HBox hbox = new HBox();
@@ -90,9 +98,8 @@ public class MainJavaFX_ToDoFX extends Application {
         txtToDo.setPrefRowCount(15);
         txtToDo.setPrefSize(325, 500);
         
-        vbox2.getChildren().addAll(txtToDo, hbox);
+        vbox2.getChildren().addAll(toDoListView, hbox);
         
-
         //Holds left and right panes on main screen
         BorderPane border = new BorderPane();
         border.setPrefSize(600, 800);
@@ -102,17 +109,91 @@ public class MainJavaFX_ToDoFX extends Application {
         border.setRight(vbox2);
         
         
+        toDoListView.setItems(olToDoItems);
+        categoriesListView.setItems(olCategories);
+
+        
+        
         //Button controls
+        
+        //Opens edit categories window
         menuItem.setOnAction(e -> {
+            
             showEditCategoriesScreen();
+            
         });
         
+        //Opens edit to-do list item window
         btnDetails.setOnAction(e -> {
-            showEditToDoScreen();
+            
+            int currentIndex = toDoListView.getSelectionModel().getSelectedIndex(); //gets index of selected element
+            
+            ToDoItem currentItem = olToDoItems.get(currentIndex); //gets object at selected index
+            
+            showEditToDoScreen(currentItem);
+            
         });
         
 
+        
+        //Adds an item to the to-do list
+        btnAdd.setOnAction(e -> {
+            
+            String toDoTitle = txtNew.getText();
+            
+            String category = cmboCategories.getValue().toString();
+            
+            if(toDoTitle.equals("") || category.isEmpty())
+            {
+                AlertBox.display("Error", "Please enter an item to add to the to-do list");   
+            }
+            else
+            {
+                ToDoItem newItem = new ToDoItem(category, toDoTitle);
+                
+                olToDoItems.add(newItem);
+            }
+        });
+        
+        
+        
+        btnDelete.setOnAction(e -> {
+            
+            olToDoItems.remove(toDoListView.getSelectionModel().getSelectedItem());
+            
+        });
+        
+
+        
+        btnRaise.setOnAction(e -> {
+            
+            int currentIndex = toDoListView.getSelectionModel().getSelectedIndex(); //gets index of selected element
+            
+            ToDoItem currentItem = olToDoItems.get(currentIndex); //gets object at selected index
+            
+            olToDoItems.remove(currentIndex);
+            
+            olToDoItems.add((currentIndex-1), currentItem);
+        });
+        
+        
+        
+        btnLower.setOnAction(e -> {
+            
+            int currentIndex = toDoListView.getSelectionModel().getSelectedIndex();
+            
+            ToDoItem currentItem = olToDoItems.get(currentIndex);
+            
+            olToDoItems.remove(currentIndex);
+            
+            olToDoItems.add((currentIndex+1), currentItem);
+        });
+                
+        
+        
+
         mainScene = new Scene(border, 600, 800);
+        
         primaryStage.setTitle("ToDo.FX");
         primaryStage.setScene(mainScene);
         primaryStage.show();
@@ -128,12 +209,17 @@ public class MainJavaFX_ToDoFX extends Application {
         
         Stage stage = new Stage();
         
+        Button btnAdd = new Button("Add:");
+        Button btnDelete = new Button("Delete Selected");
+        
+        TextField txtNew = new TextField();
+        txtNew.setPromptText("Category name");
+        
+        categoriesListView.setPrefSize(300, 400);
+        
         HBox hbox = new HBox();
         hbox.setPrefSize(300, 50);
         hbox.setSpacing(0);
-        
-        Button btnAdd = new Button("Add:");
-        Button btnDelete = new Button("Delete Selected");
         
         hbox.getChildren().addAll(btnAdd, btnDelete);
         
@@ -142,24 +228,50 @@ public class MainJavaFX_ToDoFX extends Application {
         vbox.setPadding(new Insets(10, 10, 10, 10));
         vbox.setSpacing(0);
         
-        TextArea txtList = new TextArea();
-        TextField txtNew = new TextField();
-        
-        vbox.getChildren().addAll(txtList, txtNew, hbox);
+        vbox.getChildren().addAll(categoriesListView, txtNew, hbox);
         
         BorderPane border = new BorderPane();
         border.setPrefSize(300, 400);
         border.setMinHeight(400);
+        
         border.setCenter(vbox);
         
+        
+        btnAdd.setOnAction(e -> {
+            
+            String newCategory = txtNew.getText();
+            
+            if(newCategory.equals(""))
+            {
+                AlertBox.display("Error", "Please enter a category name.");
+            }
+            else
+            {
+                olCategories.add(newCategory);
+                txtNew.clear();
+            }
+        });
+        
+        
+        
+        btnDelete.setOnAction(e -> {
+            
+            olCategories.remove(categoriesListView.getSelectionModel().getSelectedItem());
+            
+        });
+        
+        
+        
+        
         Scene scene = new Scene(border, 300, 400);
+        
         stage.setScene(scene);
         stage.setTitle("Edit Categories");
         stage.show();
-        
     }
     
-    public void showEditToDoScreen(){
+    public void showEditToDoScreen(ToDoItem item){
+        
         Stage stage = new Stage();
         
         Button btnSave = new Button("Save Changes ->");
@@ -167,25 +279,45 @@ public class MainJavaFX_ToDoFX extends Application {
         TextField txtCategory = new TextField();
         TextField txtItem = new TextField();
         TextArea txtNotes = new TextArea();
+        
+        txtItem.setText(item.getToDoTitle());
+        txtCategory.setText(item.getCategory());
+        txtNotes.setText(item.getLongDescription());
+        
+        txtItem.setEditable(false);
+        txtCategory.setEditable(false);
+        
         txtNotes.setPrefSize(500, 380);
+        txtNotes.setPromptText("Add Notes");
                 
         VBox vbox1 = new VBox();
         vbox1.setSpacing(0);
+        
         vbox1.getChildren().addAll(txtCategory, txtItem);
         
         HBox hbox = new HBox();
         hbox.setPrefSize(500, 100);
         hbox.setPadding(new Insets(0, 0, 10, 0));
         hbox.setSpacing(0);
+        
         hbox.getChildren().addAll(vbox1, btnSave);
         
         VBox vbox2 = new VBox();
         vbox2.setPadding(new Insets(10, 10, 10, 10));
         vbox2.setSpacing(0);
+        
         vbox2.getChildren().addAll(hbox, txtNotes);
         
+        btnSave.setOnAction(e -> {
+            
+            String notes = txtNotes.getText();
+            
+            item.setLongDiscription(notes);
+
+        });
         
         Scene scene = new Scene(vbox2, 500, 300);
+        
         stage.setScene(scene);
         stage.setTitle("Edit To-Do Item");
         stage.show();

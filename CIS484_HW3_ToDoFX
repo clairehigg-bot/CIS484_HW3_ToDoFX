@@ -1,6 +1,16 @@
+/*
+Assignment: HW#3
+Names: Matt Dreyer, Claire Higginbotham
+*/
+
 package cis484_hw3_todofx;
 
+import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -28,25 +38,56 @@ public class MainJavaFX_ToDoFX extends Application {
     public static String toDoTitle;
     public static String category;
     
-    public static final ObservableList<ToDoItem> olToDoItems = FXCollections.observableArrayList(new ToDoItem(toDoTitle, category));
+    ArrayList<ToDoItem> toDoItemArray = new ArrayList<>();
+    ArrayList<String> categoryArray = new ArrayList<>();
+    
+    public static final ObservableList<ToDoItem> olToDoItems = FXCollections.observableArrayList();
     public static final ObservableList<String> olCategories = FXCollections.observableArrayList();
     
     public static ListView<ToDoItem> toDoListView = new ListView<ToDoItem>();
     public static ListView<String> categoriesListView = new ListView<String>();
     
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws ClassNotFoundException {
         
         mainWindow = primaryStage;
         
+        toDoListView.setItems(olToDoItems);
+        categoriesListView.setItems(olCategories);
         
         
+        //Load to do list data
+        try{
+            File itemFile = new File("todoitemdata.dat");
+            ObjectInputStream oin = new ObjectInputStream(new FileInputStream(itemFile));
+            oin.readObject().toString();}
+        catch(EOFException eofex){
+            System.out.println("End of file reached!");}
+        catch(IOException ioex){
+            ioex.printStackTrace();}
+        
+        
+        //Load category data
+        try{
+            File categoryFile = new File("categoriesdata.dat");
+            DataInputStream din = new DataInputStream(new FileInputStream(categoryFile));
+            din.readUTF();}
+        catch(EOFException eofex){
+            System.out.println("End of file reached!");}
+        catch(IOException ioex){
+            ioex.printStackTrace();}
+        
+        
+        
+        //Create menu
         MenuBar menuBar = new MenuBar();
         Menu menu = new Menu("Categories");
         MenuItem menuItem = new MenuItem("Edit Categories");
         
         menuBar.getMenus().addAll(menu);
         menu.getItems().addAll(menuItem);
+        
+        
         
         //Left pane of main screen
         VBox vbox1 = new VBox();
@@ -68,11 +109,10 @@ public class MainJavaFX_ToDoFX extends Application {
         btnAdd.setPadding(new Insets(5, 5, 5, 5));
         Button btnDelete = new Button("Delete Selected Item ->");
         btnDelete.setPadding(new Insets(5, 5, 5, 5));
-        
-        
-       
-        
+
         vbox1.getChildren().addAll(lblNew, txtNew, lblCategory,cmboCategories, btnAdd, btnDelete);
+        
+        
         
         //Right pane of main screen
         HBox hbox = new HBox();
@@ -90,7 +130,7 @@ public class MainJavaFX_ToDoFX extends Application {
         
         VBox vbox2 = new VBox();
         vbox2.setPrefSize(325, 800); //formatting
-        vbox2.setPadding(new Insets(10, 10, 10, 10));
+        vbox2.setPadding(new Insets(0, 10, 10, 10));
         vbox2.setSpacing(5);
         
         TextArea txtToDo = new TextArea();
@@ -99,6 +139,8 @@ public class MainJavaFX_ToDoFX extends Application {
         txtToDo.setPrefSize(325, 500);
         
         vbox2.getChildren().addAll(toDoListView, hbox);
+        
+        
         
         //Holds left and right panes on main screen
         BorderPane border = new BorderPane();
@@ -109,12 +151,9 @@ public class MainJavaFX_ToDoFX extends Application {
         border.setRight(vbox2);
         
         
-        toDoListView.setItems(olToDoItems);
-        categoriesListView.setItems(olCategories);
-
-        
-        
         //Button controls
+        
+        
         
         //Opens edit categories window
         menuItem.setOnAction(e -> {
@@ -122,6 +161,8 @@ public class MainJavaFX_ToDoFX extends Application {
             showEditCategoriesScreen();
             
         });
+        
+        
         
         //Opens edit to-do list item window
         btnDetails.setOnAction(e -> {
@@ -152,14 +193,21 @@ public class MainJavaFX_ToDoFX extends Application {
                 ToDoItem newItem = new ToDoItem(category, toDoTitle);
                 
                 olToDoItems.add(newItem);
+                toDoItemArray.add(newItem);
+                
+                saveToDoItems(toDoItemArray);
+                
             }
         });
         
         
-        
+        //Deletes item from to-do list
         btnDelete.setOnAction(e -> {
             
             olToDoItems.remove(toDoListView.getSelectionModel().getSelectedItem());
+            toDoItemArray.remove(toDoListView.getSelectionModel().getSelectedItem());
+            
+            saveToDoItems(toDoItemArray);
             
         });
         
@@ -172,8 +220,14 @@ public class MainJavaFX_ToDoFX extends Application {
             ToDoItem currentItem = olToDoItems.get(currentIndex); //gets object at selected index
             
             olToDoItems.remove(currentIndex);
+            toDoItemArray.remove(currentIndex);
             
             olToDoItems.add((currentIndex-1), currentItem);
+            toDoItemArray.add(currentIndex-1, currentItem);
+            
+            saveToDoItems(toDoItemArray);
+            
+            
         });
         
         
@@ -185,8 +239,13 @@ public class MainJavaFX_ToDoFX extends Application {
             ToDoItem currentItem = olToDoItems.get(currentIndex);
             
             olToDoItems.remove(currentIndex);
+            toDoItemArray.remove(currentIndex);
             
             olToDoItems.add((currentIndex+1), currentItem);
+            toDoItemArray.add((currentIndex+1), currentItem);
+            
+            saveToDoItems(toDoItemArray);
+            
         });
                 
         
@@ -248,6 +307,10 @@ public class MainJavaFX_ToDoFX extends Application {
             else
             {
                 olCategories.add(newCategory);
+                categoryArray.add(newCategory);
+                
+                saveCategories(categoryArray);
+                
                 txtNew.clear();
             }
         });
@@ -257,6 +320,9 @@ public class MainJavaFX_ToDoFX extends Application {
         btnDelete.setOnAction(e -> {
             
             olCategories.remove(categoriesListView.getSelectionModel().getSelectedItem());
+            categoryArray.remove(categoriesListView.getSelectionModel().getSelectedItem());
+            
+            saveCategories(categoryArray);
             
         });
         
@@ -313,6 +379,18 @@ public class MainJavaFX_ToDoFX extends Application {
             String notes = txtNotes.getText();
             
             item.setLongDiscription(notes);
+            
+            int currentIndex = toDoListView.getSelectionModel().getSelectedIndex();
+            
+            ToDoItem currentItem = olToDoItems.get(currentIndex);
+            
+            olToDoItems.remove(currentIndex);
+            toDoItemArray.remove(currentIndex);
+            
+            olToDoItems.add((currentIndex), currentItem);
+            toDoItemArray.add((currentIndex), currentItem);
+            
+            saveToDoItems(toDoItemArray);
 
         });
         
@@ -321,6 +399,36 @@ public class MainJavaFX_ToDoFX extends Application {
         stage.setScene(scene);
         stage.setTitle("Edit To-Do Item");
         stage.show();
+    }
+    
+
+    public void saveToDoItems(ArrayList toDoItemArray){
+        try
+        {
+            File itemFile = new File("todoitemdata.dat");
+            ObjectOutputStream oout = new ObjectOutputStream(new FileOutputStream(itemFile));
+            oout.writeObject(toDoItemArray);
+            System.out.println("Contents Saved."); 
+            oout.close();
+        }
+        catch(IOException ioex){
+            ioex.printStackTrace();
+        }
+    }
+    
+
+     public void saveCategories(ArrayList categoryArray){
+        try
+        {
+            File categoryFile = new File("categoriesdata.dat");
+            ObjectOutputStream oout = new ObjectOutputStream(new FileOutputStream(categoryFile));
+            oout.writeObject(categoryArray);
+            System.out.println("Contents Saved."); 
+            oout.close();
+        }
+        catch(IOException ioex){
+            ioex.printStackTrace();
+        }
     }
     
 }

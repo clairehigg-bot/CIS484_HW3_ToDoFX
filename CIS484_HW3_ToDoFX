@@ -3,7 +3,7 @@ Assignment: HW#3
 Names: Matt Dreyer, Claire Higginbotham
 */
 
-package cis484_hw3_todofx;
+package hw3;
 
 import java.io.*;
 import java.io.FileInputStream;
@@ -30,7 +30,7 @@ import javafx.scene.text.*;
 import javafx.stage.Stage;
 
 
-public class MainJavaFX_ToDoFX extends Application {
+public class MainJavaFX_ToDoFX extends Application implements Serializable{
     
     Stage mainWindow;
     Scene mainScene;
@@ -41,43 +41,57 @@ public class MainJavaFX_ToDoFX extends Application {
     ArrayList<ToDoItem> toDoItemArray = new ArrayList<>();
     ArrayList<String> categoryArray = new ArrayList<>();
     
-    public static final ObservableList<ToDoItem> olToDoItems = FXCollections.observableArrayList();
-    public static final ObservableList<String> olCategories = FXCollections.observableArrayList();
+    public static ObservableList<ToDoItem> olToDoItems = FXCollections.observableArrayList();
+    public static ObservableList<String> olCategories = FXCollections.observableArrayList();
     
     public static ListView<ToDoItem> toDoListView = new ListView<ToDoItem>();
     public static ListView<String> categoriesListView = new ListView<String>();
     
     @Override
     public void start(Stage primaryStage) throws ClassNotFoundException {
+        //load to do item data
+        File itemFile = new File("todoitemdata.dat");
+        if(itemFile.exists())
+        {
+            try{
+                ObjectInputStream oin = new ObjectInputStream(new FileInputStream(itemFile));
+                ArrayList<ToDoItem> toDoData = (ArrayList<ToDoItem>) oin.readObject();
+                for(ToDoItem td: toDoData)
+                {
+                    olToDoItems.add(td);
+                }
+                oin.close();
+            }
+            catch(IOException ioex){
+                ioex.printStackTrace();}
+        }
+        
+        
+        //Load category data
+        File categoryFile = new File("categoriesdata.dat");
+        if(categoryFile.exists())
+        {
+        try{
+            ObjectInputStream din = new ObjectInputStream(new FileInputStream(categoryFile));
+            ArrayList<String> categoryData = (ArrayList<String>) din.readObject();
+            for(String c: categoryData)
+            {
+                olCategories.add(c);
+            }
+            din.close();
+        }
+        catch(IOException ioex){
+            ioex.printStackTrace();}
+        
+        
+        }
         
         mainWindow = primaryStage;
         
         toDoListView.setItems(olToDoItems);
         categoriesListView.setItems(olCategories);
         
-        
-        //Load to do list data
-        try{
-            File itemFile = new File("todoitemdata.dat");
-            ObjectInputStream oin = new ObjectInputStream(new FileInputStream(itemFile));
-            oin.readObject().toString();}
-        catch(EOFException eofex){
-            System.out.println("End of file reached!");}
-        catch(IOException ioex){
-            ioex.printStackTrace();}
-        
-        
-        //Load category data
-        try{
-            File categoryFile = new File("categoriesdata.dat");
-            DataInputStream din = new DataInputStream(new FileInputStream(categoryFile));
-            din.readUTF();}
-        catch(EOFException eofex){
-            System.out.println("End of file reached!");}
-        catch(IOException ioex){
-            ioex.printStackTrace();}
-        
-        
+
         
         //Create menu
         MenuBar menuBar = new MenuBar();
@@ -113,6 +127,7 @@ public class MainJavaFX_ToDoFX extends Application {
         vbox1.getChildren().addAll(lblNew, txtNew, lblCategory,cmboCategories, btnAdd, btnDelete);
         
         
+
         
         //Right pane of main screen
         HBox hbox = new HBox();
@@ -193,7 +208,7 @@ public class MainJavaFX_ToDoFX extends Application {
                 ToDoItem newItem = new ToDoItem(category, toDoTitle);
                 
                 olToDoItems.add(newItem);
-                toDoItemArray.add(newItem);
+             
                 
                 saveToDoItems(toDoItemArray);
                 
@@ -205,7 +220,7 @@ public class MainJavaFX_ToDoFX extends Application {
         btnDelete.setOnAction(e -> {
             
             olToDoItems.remove(toDoListView.getSelectionModel().getSelectedItem());
-            toDoItemArray.remove(toDoListView.getSelectionModel().getSelectedItem());
+            
             
             saveToDoItems(toDoItemArray);
             
@@ -220,10 +235,10 @@ public class MainJavaFX_ToDoFX extends Application {
             ToDoItem currentItem = olToDoItems.get(currentIndex); //gets object at selected index
             
             olToDoItems.remove(currentIndex);
-            toDoItemArray.remove(currentIndex);
+           
             
             olToDoItems.add((currentIndex-1), currentItem);
-            toDoItemArray.add(currentIndex-1, currentItem);
+           
             
             saveToDoItems(toDoItemArray);
             
@@ -239,10 +254,10 @@ public class MainJavaFX_ToDoFX extends Application {
             ToDoItem currentItem = olToDoItems.get(currentIndex);
             
             olToDoItems.remove(currentIndex);
-            toDoItemArray.remove(currentIndex);
+            
             
             olToDoItems.add((currentIndex+1), currentItem);
-            toDoItemArray.add((currentIndex+1), currentItem);
+            
             
             saveToDoItems(toDoItemArray);
             
@@ -307,7 +322,7 @@ public class MainJavaFX_ToDoFX extends Application {
             else
             {
                 olCategories.add(newCategory);
-                categoryArray.add(newCategory);
+                
                 
                 saveCategories(categoryArray);
                 
@@ -320,7 +335,7 @@ public class MainJavaFX_ToDoFX extends Application {
         btnDelete.setOnAction(e -> {
             
             olCategories.remove(categoriesListView.getSelectionModel().getSelectedItem());
-            categoryArray.remove(categoriesListView.getSelectionModel().getSelectedItem());
+            
             
             saveCategories(categoryArray);
             
@@ -385,10 +400,10 @@ public class MainJavaFX_ToDoFX extends Application {
             ToDoItem currentItem = olToDoItems.get(currentIndex);
             
             olToDoItems.remove(currentIndex);
-            toDoItemArray.remove(currentIndex);
+           
             
             olToDoItems.add((currentIndex), currentItem);
-            toDoItemArray.add((currentIndex), currentItem);
+           
             
             saveToDoItems(toDoItemArray);
 
@@ -399,12 +414,20 @@ public class MainJavaFX_ToDoFX extends Application {
         stage.setScene(scene);
         stage.setTitle("Edit To-Do Item");
         stage.show();
+        
+        
+        
     }
     
 
     public void saveToDoItems(ArrayList toDoItemArray){
         try
         {
+            toDoItemArray = new ArrayList<ToDoItem>();
+            for(ToDoItem td: olToDoItems)
+            {
+                toDoItemArray.add(td);
+            }
             File itemFile = new File("todoitemdata.dat");
             ObjectOutputStream oout = new ObjectOutputStream(new FileOutputStream(itemFile));
             oout.writeObject(toDoItemArray);
@@ -416,10 +439,16 @@ public class MainJavaFX_ToDoFX extends Application {
         }
     }
     
+    
 
      public void saveCategories(ArrayList categoryArray){
         try
         {
+            categoryArray = new ArrayList<String>();
+            for(String c: olCategories)
+            {
+                categoryArray.add(c);
+            }
             File categoryFile = new File("categoriesdata.dat");
             ObjectOutputStream oout = new ObjectOutputStream(new FileOutputStream(categoryFile));
             oout.writeObject(categoryArray);
@@ -430,5 +459,11 @@ public class MainJavaFX_ToDoFX extends Application {
             ioex.printStackTrace();
         }
     }
+     
+
+     
+     
+
+     
     
 }

@@ -16,6 +16,7 @@ public class ToDoItem implements Serializable{
     {
         this.category = category;
         this.toDoTitle = toDoTitle;
+        //this.longDescription = longDescription;
         
 //        if(this.idNumber > nextID)
 //            nextID = ++this.idNumber;
@@ -56,7 +57,7 @@ public class ToDoItem implements Serializable{
     public String toString()
     {
         String output = "";
-        output += this.category + " " + this.toDoTitle;
+        output += this.category + "\t" + this.toDoTitle; //+ "\t" + this.longDescription; 
         
         return output;
     }
